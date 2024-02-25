@@ -35,8 +35,6 @@ class Resume(models.Model):
 class Company(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=255)
-    company_number = models.CharField(max_length=15)
-    company_email = models.EmailField()
     company_address = models.TextField()
     company_logo = models.ImageField(upload_to='company_logo/')
     company_verified = models.BooleanField(default=False)
