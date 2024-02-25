@@ -16,6 +16,7 @@ class Profile(models.Model):
     phone = models.ForeignKey(MessageOTP, on_delete=models.CASCADE)
     address = models.TextField()
     profile_photo = models.ImageField(upload_to=path_based_on_user_id_profile_photo)
+    profile_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -34,8 +35,11 @@ class Resume(models.Model):
 class Company(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=255)
+    company_number = models.CharField(max_length=15)
+    company_email = models.EmailField()
     company_address = models.TextField()
     company_logo = models.ImageField(upload_to='company_logo/')
+    company_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -64,6 +68,7 @@ class Job(models.Model):
     )
     job_type = models.CharField(max_length=20, choices=job_type_choices)
     remote_job = models.BooleanField(default=False)
+    job_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

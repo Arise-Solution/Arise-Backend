@@ -3,6 +3,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db.models import Q
 from .models import Profile, Resume, Company, Job, JobApplication
 from .serializers import (ProfileSerializer, ResumeSerializer, CompanySerializer,
                           JobSerializer, JobApplicationSerializer)
@@ -21,7 +22,6 @@ class ProfileView(APIView):
     @staticmethod
     def post(request, *args, **kwargs):
         data = request.data
-        data['user'] = request.user.id
         serializer = ProfileSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -51,7 +51,6 @@ class ResumeView(APIView):
     @staticmethod
     def post(request, *args, **kwargs):
         data = request.data
-        data['profile'] = Profile.objects.get(user=request.user).id
         serializer = ResumeSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -74,14 +73,13 @@ class CompanyView(APIView):
 
     @staticmethod
     def get(request, *args, **kwargs):
-        company = Company.objects.get(user=request.user)
+        company = Company.objects.get(Q(user=request.user) & Q(company_verified=True))
         serializer = CompanySerializer(company)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @staticmethod
     def post(request, *args, **kwargs):
         data = request.data
-        data['user'] = request.user.id
         serializer = CompanySerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -104,14 +102,13 @@ class JobView(APIView):
 
     @staticmethod
     def get(request, *args, **kwargs):
-        jobs = Job.objects.filter(company__user=request.user)
+        jobs = Job.objects.filter(Q(job_type=request.data['job_type']) & Q(job_verified=True))
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @staticmethod
     def post(request, *args, **kwargs):
         data = request.data
-        data['company'] = Company.objects.get(user=request.user).id
         serializer = JobSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -131,14 +128,17 @@ class JobApplicationView(APIView):
 
     @staticmethod
     def get(request, *args, **kwargs):
-        job_applications = JobApplication.objects.filter(job__company__user=request.user)
-        serializer = JobApplicationSerializer(job_applications, many=True)
+        if not request.data['viewer']:
+            job_applications = JobApplication.objects.filter(job__company__user=request.user)
+            serializer = JobApplicationSerializer(job_applications, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        job_applications = JobApplication.objects.filter(user=request.user)
+        serializer = JobApplicationSerializer(job_applications)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @staticmethod
     def post(request, *args, **kwargs):
         data = request.data
-        data['applicant'] = request.user.id
         serializer = JobApplicationSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -147,7 +147,7 @@ class JobApplicationView(APIView):
 
     @staticmethod
     def delete(request, *args, **kwargs):
-        job_application = JobApplication.objects.get(job__company__user=request.user,
+        job_application = JobApplication.objects.get(user=request.user,
                                                      id=kwargs.get('job_application_id'))
         job_application.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
