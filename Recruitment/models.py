@@ -1,0 +1,82 @@
+from django.contrib.auth.models import User
+from Authentication.models import MessageOTP
+from django.db import models
+
+
+def path_based_on_user_id_profile_photo(instance, filename):
+    return '{0}/profile_photo/{1}'.format(instance.user.id, filename)
+
+
+def path_based_on_user_id_resume(instance, filename):
+    return '{0}/resume/{1}'.format(instance.user.id, filename)
+
+
+class Profile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    phone = models.ForeignKey(MessageOTP, on_delete=models.CASCADE)
+    address = models.TextField()
+    profile_photo = models.ImageField(upload_to=path_based_on_user_id_profile_photo)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.email
+
+
+class Resume(models.Model):
+    profile = models.ForeignKey('Profile', on_delete=models.CASCADE)
+    resume_file = models.FileField(upload_to=path_based_on_user_id_resume)
+
+    def __str__(self):
+        return self.profile.user.email
+
+
+class Company(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company_name = models.CharField(max_length=255)
+    company_address = models.TextField()
+    company_logo = models.ImageField(upload_to='company_logo/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.company_name
+
+
+class Job(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    job_title = models.CharField(max_length=255)
+    job_description = models.TextField()
+    job_experience_choices = (
+        ('0-2 years', '0-2 years'),
+        ('2-5 years', '2-5 years'),
+        ('5-10 years', '5-10 years'),
+        ('10+ years', '10+ years')
+    )
+    job_experience = models.CharField(max_length=10, choices=job_experience_choices)
+    job_location = models.CharField(max_length=255)
+    job_salary = models.FloatField()
+    job_type_choices = (
+        ('Full Time', 'Full Time'),
+        ('Part Time', 'Part Time'),
+        ('Contract', 'Contract'),
+        ('Internship', 'Internship'),
+    )
+    job_type = models.CharField(max_length=20, choices=job_type_choices)
+    remote_job = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.job_title
+
+
+class JobApplication(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
+    cover_letter = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.email

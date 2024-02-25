@@ -38,10 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
     'Authentication.apps.AuthenticationConfig',
+    'Recruitment.apps.RecruitmentConfig',
     'djoser',
 ]
 
@@ -53,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 REST_FRAMEWORK = {
@@ -60,6 +68,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 }
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
 
 ROOT_URLCONF = 'AriseSolutionAPI.urls'
 

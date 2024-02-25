@@ -56,3 +56,8 @@ python manage.py runserver
 ## Documentation of drf_yasg
 
 The API documentation is available at `http://localhost:8000/swagger/` and `http://localhost:8000/redoc/`.
+
+
+### Incomplete tasks
+
+- [x] https://www.rootstrap.com/blog/how-to-integrate-google-login-in-your-django-rest-api-using-the-dj-rest-auth-library
