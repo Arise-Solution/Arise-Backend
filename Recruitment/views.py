@@ -74,7 +74,7 @@ class CompanyView(APIView):
     @staticmethod
     def get(request, *args, **kwargs):
         company = Company.objects.get(Q(user=request.user) & Q(company_verified=True))
-        serializer = CompanySerializer(company)
+        serializer = CompanySerializer(company, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @staticmethod
@@ -106,21 +106,6 @@ class JobView(APIView):
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @staticmethod
-    def post(request, *args, **kwargs):
-        data = request.data
-        serializer = JobSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @staticmethod
-    def delete(request, *args, **kwargs):
-        job = Job.objects.get(company__user=request.user, id=kwargs.get('job_id'))
-        job.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class JobApplicationView(APIView):
     authentication_classes = (TokenAuthentication,)
@@ -150,4 +135,41 @@ class JobApplicationView(APIView):
         job_application = JobApplication.objects.get(user=request.user,
                                                      id=kwargs.get('job_application_id'))
         job_application.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class JobCompanyView(APIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def get(request, *args, **kwargs):
+        jobs = Job.objects.filter(company__user=request.user)
+        serializer = JobSerializer(jobs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def post(request, *args, **kwargs):
+        if not Company.objects.filter(user=request.user).exists():
+            return Response({'message': 'You need to create a company first'}, status=status.HTTP_400_BAD_REQUEST)
+        data = request.data
+        serializer = JobSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def put(request, *args, **kwargs):
+        job = Job.objects.get(company__user=request.user, id=kwargs.get('job_id'))
+        serializer = JobSerializer(job, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def delete(request, *args, **kwargs):
+        job = Job.objects.get(company__user=request.user, id=kwargs.get('job_id'))
+        job.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

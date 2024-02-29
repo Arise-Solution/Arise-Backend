@@ -67,6 +67,7 @@ class Job(models.Model):
     job_type = models.CharField(max_length=20, choices=job_type_choices)
     remote_job = models.BooleanField(default=False)
     job_verified = models.BooleanField(default=False)
+    job_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -78,7 +79,7 @@ class JobApplication(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
-    cover_letter = models.TextField()
+    cover_letter = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
