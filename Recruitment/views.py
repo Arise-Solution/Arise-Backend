@@ -7,6 +7,7 @@ from django.db.models import Q
 from .models import Profile, Resume, Company, Job, JobApplication
 from .serializers import (ProfileSerializer, ResumeSerializer, CompanySerializer,
                           JobSerializer, JobApplicationSerializer)
+from django_filters import rest_framework as filters
 
 
 class ProfileView(APIView):
@@ -200,3 +201,27 @@ class JobCompanyView(APIView):
         job = Job.objects.get(company__user=request.user, id=kwargs.get('job_id'))
         job.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FilterView(APIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    class JobFilter(filters.FilterSet):
+        class Meta:
+            model = Job
+            fields = {
+                'job_title': ['exact', 'icontains'],
+                'job_experience': ['exact'],
+                'job_location': ['exact', 'icontains'],
+                'job_salary': ['exact', 'gte', 'lte'],
+                'job_type': ['exact'],
+                'remote_job': ['exact'],
+            }
+
+    def get(self, request, *args, **kwargs):
+        filter_data = request.data.get('filter_data', {})
+        queryset = Job.objects.all()
+        filter_class = self.JobFilter(filter_data, queryset=queryset)
+        serializer = JobSerializer(filter_class.qs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
