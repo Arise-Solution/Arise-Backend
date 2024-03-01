@@ -24,6 +24,12 @@ class ProfileView(APIView):
         data = request.data
         serializer = ProfileSerializer(data=data)
         if serializer.is_valid():
+            new_profile_photo = request.data.get('profile_photo', None)
+            if new_profile_photo:
+                max_size = 5 * 1024 * 1024
+                if new_profile_photo.size > max_size:
+                    return Response({"error": "Profile photo size cannot exceed 5MB."},
+                                    status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -34,8 +40,13 @@ class ProfileView(APIView):
         serializer = ProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             new_profile_photo = request.data.get('profile_photo', None)
-            if new_profile_photo and profile.profile_photo:
-                profile.profile_photo.delete(save=False)
+            if new_profile_photo:
+                max_size = 5 * 1024 * 1024
+                if new_profile_photo.size > max_size:
+                    return Response({"error": "Profile photo size cannot exceed 5MB."},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                if profile.profile_photo:
+                    profile.profile_photo.delete(save=False)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -56,6 +67,12 @@ class ResumeView(APIView):
         data = request.data
         serializer = ResumeSerializer(data=data)
         if serializer.is_valid():
+            new_resume = request.data.get('resume', None)
+            if new_resume:
+                max_size = 2 * 1024 * 1024
+                if new_resume.size > max_size:
+                    return Response({"error": "Resume size cannot exceed 2MB."},
+                                    status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -63,11 +80,15 @@ class ResumeView(APIView):
     @staticmethod
     def put(request, *args, **kwargs):
         resume = Resume.objects.get(profile__user=request.user)
-        new_resume = request.data.get('resume')
+        new_resume = request.data.get('resume', None)
         if new_resume and resume.resume:
             resume.resume.delete()
         serializer = ResumeSerializer(resume, data=request.data, partial=True)
         if serializer.is_valid():
+            max_size = 2 * 1024 * 1024
+            if new_resume and new_resume.size > max_size:
+                return Response({"error": "Resume size cannot exceed 2MB."},
+                                status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
