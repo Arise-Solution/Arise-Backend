@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from Authentication.models import MessageOTP
 from django.db import models
+from django.core.validators import FileExtensionValidator
 
 
 def path_based_on_user_id_profile_photo(instance, filename):
@@ -15,7 +16,8 @@ class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone = models.ForeignKey(MessageOTP, on_delete=models.CASCADE)
     address = models.TextField()
-    profile_photo = models.ImageField(upload_to=path_based_on_user_id_profile_photo)
+    profile_photo = models.ImageField(upload_to=path_based_on_user_id_profile_photo,
+                                      validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])])
     profile_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -26,7 +28,8 @@ class Profile(models.Model):
 
 class Resume(models.Model):
     profile = models.ForeignKey('Profile', on_delete=models.CASCADE)
-    resume_file = models.FileField(upload_to=path_based_on_user_id_resume)
+    resume_file = models.FileField(upload_to=path_based_on_user_id_resume,
+                                   validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])])
 
     def __str__(self):
         return self.profile.user.email
@@ -36,7 +39,10 @@ class Company(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=255)
     company_address = models.TextField()
-    company_logo = models.ImageField(upload_to='company_logo/')
+    company_logo = models.ImageField(upload_to='company_logo/',
+                                     validators=[FileExtensionValidator(
+                                         allowed_extensions=['jpg', 'jpeg', 'png', 'svg'])]
+                                     )
     company_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
