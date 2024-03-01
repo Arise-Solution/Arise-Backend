@@ -33,6 +33,9 @@ class ProfileView(APIView):
         profile = Profile.objects.get(user=request.user)
         serializer = ProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
+            new_profile_photo = request.data.get('profile_photo', None)
+            if new_profile_photo and profile.profile_photo:
+                profile.profile_photo.delete(save=False)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -60,6 +63,9 @@ class ResumeView(APIView):
     @staticmethod
     def put(request, *args, **kwargs):
         resume = Resume.objects.get(profile__user=request.user)
+        new_resume = request.data.get('resume')
+        if new_resume and resume.resume:
+            resume.resume.delete()
         serializer = ResumeSerializer(resume, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
