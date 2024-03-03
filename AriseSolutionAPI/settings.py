@@ -63,6 +63,45 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
+JAZZMIN_SETTINGS = {
+    "site_title": "Arise Solutions",
+    "site_header": "Arise Solutions",
+    "site_brand": "Arise",
+    "site_logo": "Brand/arise-single-logo.png",
+    "login_logo": "Brand/arise-single-logo.png",
+    "login_logo_dark": "Brand/arise-single-logo.png",
+    "site_logo_classes": "img-circle",
+    "welcome_sign": "Welcome to Arise Solutions",
+    "copyright": "Arise Solutions",
+    "search_model": ["auth.User", "auth.Group"],
+    "user_avatar": "Brand/avatar.jpeg",
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Support", "url": "https://arisesolution.com/contact-us/", "new_window": True},
+        {"model": "auth.User"},
+        {"app": "Arise Solutions"},
+    ],
+    "usermenu_links": [
+        {"name": "Support", "url": "https://arisesolution.com/contact-us/", "new_window": True},
+        {"model": "auth.user"}
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "order_with_respect_to": ["auth", "auth.user"],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": True,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": True,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
