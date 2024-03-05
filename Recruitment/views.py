@@ -8,6 +8,7 @@ from .models import Profile, Resume, Company, Job, JobApplication
 from .serializers import (ProfileSerializer, ResumeSerializer, CompanySerializer,
                           JobSerializer, JobApplicationSerializer)
 from django_filters import rest_framework as filters
+from .utils import send_job_application_received_email
 
 
 class ProfileView(APIView):
@@ -155,6 +156,12 @@ class JobApplicationView(APIView):
         serializer = JobApplicationSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            template_data = {
+                'applicant_name': request.user.profile.full_name,
+                'job_title': serializer.validated_data['job'].job_title,
+                'company_name': serializer.validated_data['job'].company.company_name
+            }
+            send_job_application_received_email(request.user.email, template_data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
