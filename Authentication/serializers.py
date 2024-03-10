@@ -15,3 +15,9 @@ class MessageOTPSerializer(serializers.ModelSerializer):
     class Meta:
         model = MessageOTP
         fields = ['id', 'user', 'phone_number', 'otp', 'create_date_time', 'validate_date_time']
+
+
+class SignupVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email']

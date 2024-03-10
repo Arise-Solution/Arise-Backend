@@ -4,13 +4,14 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.views.generic import RedirectView
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import MessageOTPSerializer
+from .serializers import MessageOTPSerializer, SignupVerificationSerializer
 from .models import MessageOTP
 from .helper import MessageHandler
 
@@ -58,3 +59,33 @@ class MessageOTPVerify(APIView):
             MessageOTP.objects.filter(phone_number=request.data['phone']).update(validated=True)
             return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
         return Response({'message': 'OTP verification failed'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MessageOTPResend(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def post(request):
+        user = MessageOTP.objects.get(phone_number=request.data['phone'], user=request.data['user'])
+        if user.validated:
+            return Response({'message': 'OTP already verified'}, status=status.HTTP_400_BAD_REQUEST)
+        otp = random.randint(1000000, 9999999)
+        MessageHandler(request.data['phone'], otp).send_otp_via_message()
+        MessageOTP.objects.filter(phone_number=request.data['phone']).update(otp=f'{otp}')
+        return Response({'message': 'OTP resent successfully'}, status=status.HTTP_200_OK)
+
+
+class SignupVerificationView(APIView):
+    @staticmethod
+    def post(request, *args, **kwargs):
+        serializer = SignupVerificationSerializer(data=request.data)
+        if serializer.is_valid():
+            username_taken = User.objects.filter(username=serializer.validated_data['username']).exists()
+            email_taken = User.objects.filter(email=serializer.validated_data['email']).exists()
+            if username_taken:
+                return Response({'detail': 'Username is already taken.'}, status=status.HTTP_400_BAD_REQUEST)
+            if email_taken:
+                return Response({'detail': 'Email is already taken.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Signup details are valid.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
