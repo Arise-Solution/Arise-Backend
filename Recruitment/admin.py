@@ -7,11 +7,11 @@ class ProfileAdmin(admin.ModelAdmin):
 
 
 class ResumeAdmin(admin.ModelAdmin):
-    list_display = 'profile'
+    list_display = ('profile',)
 
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('job_title', 'company', 'created_at')
+    list_display = ('job_title', 'job_company', 'created_at')
 
 
 class JobApplicationAdmin(admin.ModelAdmin):
