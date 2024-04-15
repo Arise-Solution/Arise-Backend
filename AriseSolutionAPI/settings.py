@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +76,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'AriseSolutionAPI.wsgi.application'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}
 
 
 # Database
